@@ -1134,11 +1134,8 @@ classdef Label3D < Animator
             
             % Reshape to dannce specifications
             % Only take the laFrbeled frames
-            labeledFrames = ~any(obj.status ~= obj.isLabeled, 2);
-            labeledFrames = repelem(labeledFrames, 1, 3, 1);
-            pts3D = obj.points3D;
-            pts3D(~labeledFrames) = nan;
-            data_3D = permute(pts3D, [3, 2, 1]);
+            % Use the points3D directly, as it already contains NaN for untriangulated points
+            data_3D = permute(obj.points3D, [3, 2, 1]);
             data_3D = reshape(data_3D, size(data_3D, 1), []);
             %             data_3D(~any(~isnan(data_3D), 2), :) = [];
             %             pts3D(any(~any(~isnan(pts3D), 2), 3), :, :) = [];
@@ -1504,7 +1501,17 @@ classdef Label3D < Animator
                 kps = zeros(obj.nMarkers, size(obj.camPoints, 3), size(obj.camPoints, 4));
                 kps(:) = obj.camPoints(:, nKPAnimator, :, :);
                 kps = permute(kps, [3, 2, 1]);
-                
+                fr = obj.frameInds(obj.frame); % Get the actual frame index
+
+                % Check for NaN reprojected points and use hand-labeled if necessary
+                current_hand_labeled_2d = squeeze(obj.handLabeled2D(:, nKPAnimator, :, fr));
+
+                nan_x_mask = isnan(kps(fr, 1, :));
+                kps(fr, 1, nan_x_mask) = current_hand_labeled_2d(nan_x_mask, 1);
+
+                nan_y_mask = isnan(kps(fr, 2, :));
+                kps(fr, 2, nan_y_mask) = current_hand_labeled_2d(nan_y_mask, 2);
+
                 obj.h{kpaId}.markers = kps;
                 obj.h{kpaId}.markersX(:) = kps(:, 1, :);
                 obj.h{kpaId}.markersY(:) = kps(:, 2, :);

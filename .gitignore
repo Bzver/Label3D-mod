@@ -43,3 +43,9 @@ octave-workspace
 /*_Label3d.mat
 
 .DS_Store
+
+# Animator extension
+deps/Animator
+
+# 2D Pose estimation files
+*.csv
