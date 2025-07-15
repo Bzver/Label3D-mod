@@ -32,10 +32,9 @@ if isMulti == 0
     end
 else
     if isCOM == 1
-        skeleton = load('COM-multi.mat');
+        skeleton = load('ncom-multi.mat');
     end
 end
-
 
 %% Load previous labelled data
 
