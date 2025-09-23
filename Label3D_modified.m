@@ -1367,8 +1367,9 @@ classdef Label3D < Animator
                     'data_sampleID', data_sampleID);
             end
 
-            saveFilename = p.saveFilename;
-            if isempty(saveFilename)
+            if isempty(obj.sessionDatestr)
+                saveFilename = 'Label3D_dannce.mat';
+            else
                 saveFilename = sprintf('%sLabel3D_dannce.mat', obj.sessionDatestr);
             end
             
@@ -1380,6 +1381,7 @@ classdef Label3D < Animator
             if ~isempty(obj.sync)
                 sync = obj.sync;
                 save(outPath, 'labelData', 'handLabeled2D', 'params', 'sync', 'camnames')
+                disp(['Saved as: ', saveFilename]);
             else
                 save(outPath, 'labelData', 'handLabeled2D', 'params', 'camnames')
             end

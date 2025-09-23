@@ -8,19 +8,19 @@ addpath(genpath('skeletons'))
 
 %% Setting time! SET THESE BEFORE YOU DO ANYTHING!!!
 
-projectFolder = fullfile('D:\Project\SDANNCE-Models\4CAM-250620\SD-20250705-MULTI\');
+cd D:\Repository\Label3D-mod
+projectFolder = fullfile('D:\Project\SDANNCE-Models\4CAM-3D-2ETUP\SD-20250705-MULTI\');
+%projectFolder = fullfile('D:\Project\SDANNCE-Models\666-6CAM\SD-20250910-c55toe1\');
 
-framesToLabel = 1:30:5000; % Only used when isInitialLabeling
-numViews = 4; % Only used when isInitialLabeling
+framesToLabel = 1:30:1000; % Only used when isInitialLabeling
 
-ChosenOne = '';
+ChosenOne = 'maus2_labeled.mat';
 
 isInitialLabeling = 0;
 isLoadingImplant = 0;
 isExporting = 1;
-isCOM = 1;
-isMulti = 1;
-isChosenOne = 0;
+isCOM = 0;
+isMulti = 0;
 
 %% Get the skeleton
 
@@ -36,13 +36,22 @@ else
     end
 end
 
+%% Swap working Label3D file
+if isInitialLabeling == 1
+    delete('Label3D.m');
+    copyfile('Label3D_original.m', 'Label3D.m');
+else
+    delete('Label3D.m');
+    copyfile('Label3D_modified.m', 'Label3D.m');
+end
+
 %% Load previous labelled data
 
 if isInitialLabeling == 0
     if isLoadingImplant == 1
         labelled_data = "viewer-implanted.mat";
     else
-        if isChosenOne == 1
+        if ~isempty(ChosenOne)
             labelled_data = ChosenOne;
         else
             dataDir = '.';
@@ -81,6 +90,10 @@ end
 
 %% Load the videos into memory
 
+if ~exist(projectFolder, 'dir')
+    warning('Directory not found: %s', projectDir);
+end
+
 vidName = '0.mp4';
 vidPaths = collectVideoPaths(projectFolder,vidName);
 videos = cell(4,1);
@@ -91,7 +104,7 @@ calibPaths = collectCalibrationPaths(projectFolder);
 params = cellfun(@(X) {load(X)}, calibPaths);
 
 if isInitialLabeling == 1
-    numCam = numViews;
+    numCam = length(vidPaths);
 else
     numCam = length(matfile(labelled_data).camParams);
 end
@@ -125,7 +138,7 @@ else
         lb = matfile(labelled_data, 'Writable', false);
         if any(isnan(lb.data_3D),'all')
             [NaN_rows, NaN_columns] = find(isnan(lb.data_3D));
-            disp('There are still frames not completely labelled:');
+            warning('There are still frames not completely labelled:');
             disp(unique(NaN_rows));
         else
             labelGui.status = 2*ones(length(skeleton.joint_names),nVid,totalFrames);

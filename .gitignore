@@ -1,5 +1,7 @@
 sandbox.m
 *~
+*.pyc
+
 archive
 viewResults.m
 .git
