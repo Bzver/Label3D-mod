@@ -1580,19 +1580,9 @@ classdef Label3D < Animator
         end
         
         function updateStatusAnimator(obj)
-            % DEBUG: Check for NaNs
-            nanCount = sum(isnan(obj.points3D(:)));
-            fprintf('Total NaNs in points3D: %d\n', nanCount);
-            if nanCount == 0
-                warning('points3D has NO NaNs — everything will appear labeled!');
-            end
-
             summary = squeeze(all(~isnan(obj.points3D), 2));
             summary = double(summary);  % [nMarkers × nFrames]
 
-            fprintf('Unique values in summary: %s\n', mat2str(unique(summary(:)')));
-            fprintf('Min CData: %g, Max CData: %g\n', min(obj.statusAnimator.img.CData(:)), max(obj.statusAnimator.img.CData(:)));
-    
             obj.statusAnimator.img.CData = summary;
 
             yyaxis(obj.statusAnimator.Axes, 'right')
