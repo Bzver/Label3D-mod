@@ -1557,32 +1557,49 @@ classdef Label3D < Animator
             f = figure('Units', 'Normalized', 'pos', [0, 0, 0.5, 0.3], ...
                 'NumberTitle', 'off', 'ToolBar', 'none');
             ax = gca;
-            colormap([0, 0, 0; 0.5, 0.5, 0.5; 1, 1, 1])
-            summary = zeros(size(obj.status, 1), size(obj.status, 3));
-            summary(:) = mode(obj.status, 2);
+            summary = squeeze(all(~isnan(obj.points3D), 2));  % [nMarkers × nFrames], logical
+            summary = double(summary);
+        
             obj.statusAnimator = HeatMapAnimator(summary', 'Axes', ax);
             obj.statusAnimator.c.Visible = 'off';
+            colormap(f, [0, 0, 0; 1, 1, 1])
+
             ax = obj.statusAnimator.Axes;
             set(ax, 'YTick', 1 : obj.nMarkers, 'YTickLabels', obj.skeleton.joint_names)
+
             yyaxis(ax, 'right')
             if obj.nMarkers == 1
                 set(ax, 'YLim', [0.5, 1.5], 'YTick', 1, 'YTickLabels', sum(summary, 2))
             else
                 set(ax, 'YLim', [1, obj.nMarkers], 'YTick', 1:obj.nMarkers, 'YTickLabels', sum(summary, 2))
             end
-            set(obj.statusAnimator.img, 'CDataMapping', 'direct')
-            obj.counter = title(sprintf('Total: %d', sum(any(summary == obj.isLabeled, 1))));
+
+            totalLabeledFrames = sum(any(summary, 1));
+            obj.counter = title(sprintf('Total: %d', totalLabeledFrames));
             f.set('MenuBar','none');
         end
         
         function updateStatusAnimator(obj)
-            obj.checkStatus();
-            summary = zeros(size(obj.status, 1), size(obj.status, 3));
-            summary(:) = mode(obj.status, 2);
-            obj.statusAnimator.img.CData = summary + 1;
+            % DEBUG: Check for NaNs
+            nanCount = sum(isnan(obj.points3D(:)));
+            fprintf('Total NaNs in points3D: %d\n', nanCount);
+            if nanCount == 0
+                warning('points3D has NO NaNs — everything will appear labeled!');
+            end
+
+            summary = squeeze(all(~isnan(obj.points3D), 2));
+            summary = double(summary);  % [nMarkers × nFrames]
+
+            fprintf('Unique values in summary: %s\n', mat2str(unique(summary(:)')));
+            fprintf('Min CData: %g, Max CData: %g\n', min(obj.statusAnimator.img.CData(:)), max(obj.statusAnimator.img.CData(:)));
+    
+            obj.statusAnimator.img.CData = summary;
+
             yyaxis(obj.statusAnimator.Axes, 'right')
-            set(obj.statusAnimator.Axes, 'YTickLabels', flip(sum(summary == obj.isLabeled, 2)))
-            obj.counter.String = sprintf('Total: %d', sum(any(summary == obj.isLabeled, 1)));
+            set(obj.statusAnimator.Axes, 'YTickLabels', flip(sum(summary, 2)))
+
+            totalLabeledFrames = sum(any(summary, 1));
+            obj.counter.String = sprintf('Total: %d', totalLabeledFrames);
             obj.statusAnimator.update()
         end
     end

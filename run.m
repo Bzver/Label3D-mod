@@ -9,16 +9,16 @@ addpath(genpath('skeletons'))
 %% Setting time! SET THESE BEFORE YOU DO ANYTHING!!!
 
 cd D:\Repository\Label3D-mod
-projectFolder = fullfile('D:\Project\SDANNCE-Models\4CAM-3D-2ETUP\SD-20250705-MULTI\');
-%projectFolder = fullfile('D:\Project\SDANNCE-Models\666-6CAM\SD-20250910-c55toe1\');
+%projectFolder = fullfile('D:\Project\SDANNCE-Models\4CAM-3D-2ETUP\SD-20250705-MULTI\');
+projectFolder = fullfile('D:\Project\SDANNCE-Models\666-6CAM\SD-20250910-c55toe1\');
 
-framesToLabel = 1:30:1000; % Only used when isInitialLabeling
+framesToLabel = 1:30:200; % Only used when isInitialLabeling
 
-ChosenOne = 'maus2_labeled.mat';
+ChosenOne = '';
 
 isInitialLabeling = 0;
 isLoadingImplant = 0;
-isExporting = 1;
+isExporting = 0;
 isCOM = 0;
 isMulti = 0;
 
@@ -37,7 +37,7 @@ else
 end
 
 %% Swap working Label3D file
-if isInitialLabeling == 1
+if isInitialLabeling == 1 || isCOM == 1
     delete('Label3D.m');
     copyfile('Label3D_original.m', 'Label3D.m');
 else
@@ -46,7 +46,6 @@ else
 end
 
 %% Load previous labelled data
-
 if isInitialLabeling == 0
     if isLoadingImplant == 1
         labelled_data = "viewer-implanted.mat";
@@ -111,9 +110,6 @@ end
 
 if isempty(sync)
     dannce_file = dir(fullfile(projectFolder, '*dannce.mat'));
-    if numCam == 5
-        dannce_file = dir(fullfile(projectFolder, '*dannce_5cam.mat'));
-    end
     dannce = load(fullfile(projectFolder, dannce_file(1).name));
     sync = dannce.sync;
     %params = dannce.params;
